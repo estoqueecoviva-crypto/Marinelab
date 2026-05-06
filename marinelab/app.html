@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marine Lab • Sistema</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.0/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-mini">
+                    <div class="logo-mark"><img src="logomarinelab.jpeg" alt="Logo Marine Lab" class="brand-logo-img"></div>
+                    <div>
+                        <h2>Marine Lab</h2>
+                        <div class="tagline">Travel Control</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-section-label">Navegação</div>
+
+            <a class="nav-item active" data-view="dashboard">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a class="nav-item" data-view="trips">
+                <i class="fas fa-route"></i> Viagens
+            </a>
+            <a class="nav-item" data-view="expenses">
+                <i class="fas fa-receipt"></i> Gastos
+            </a>
+            <a class="nav-item admin-only" data-view="approvals">
+                <i class="fas fa-check-double"></i> Aprovações
+            </a>
+            <a class="nav-item admin-only" data-view="reports">
+                <i class="fas fa-file-invoice-dollar"></i> Relatórios
+            </a>
+            <a class="nav-item admin-only" data-view="users">
+                <i class="fas fa-users"></i> Usuários
+            </a>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-details">
+                        <div class="name" id="userName">-</div>
+                        <div class="role" id="userRole">-</div>
+                    </div>
+                </div>
+                <button class="btn btn-logout" id="btnLogout">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            <header class="topbar">
+                <div style="display:flex; align-items:center; gap:14px;">
+                    <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                    <div class="topbar-title">
+                        <div class="breadcrumb" id="topBreadcrumb">Marine Lab</div>
+                        <h1 id="topTitle">Dashboard</h1>
+                    </div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-gold" id="btnQuickExpense">
+                        <i class="fas fa-bolt"></i> <span>Lançar Gasto</span>
+                    </button>
+                    <button class="btn btn-secondary admin-only" id="btnNewTrip">
+                        <i class="fas fa-plus"></i> <span>Nova Viagem</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content" id="pageContent">
+                <!-- Renderizado via JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== MODAL: NOVA/EDITAR VIAGEM ===== -->
+    <div class="modal-overlay" id="modalTrip">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTripTitle">Nova Viagem</h3>
+                <button class="modal-close" data-close="modalTrip"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formTrip">
+                <div class="modal-body">
+                    <input type="hidden" id="trip-id">
+                    <div class="form-group">
+                        <label>Nome da Viagem *</label>
+                        <input type="text" id="trip-name" class="form-control" required placeholder="Ex: Boat Show Miami 2026">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Funcionário Responsável *</label>
+                            <select id="trip-employee" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="trip-status" class="form-control">
+                                <option value="em_andamento">Em Andamento</option>
+                                <option value="finalizada">Finalizada</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Data Início *</label>
+                            <input type="date" id="trip-start" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Fim *</label>
+                            <input type="date" id="trip-end" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cidade *</label>
+                            <input type="text" id="trip-city" class="form-control" required placeholder="Florianópolis">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <input type="text" id="trip-state" class="form-control" maxlength="2" placeholder="SC">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Objetivo</label>
+                            <input type="text" id="trip-purpose" class="form-control" placeholder="Visita técnica, evento, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label>Orçamento Previsto (R$)</label>
+                            <input type="number" id="trip-budget" class="form-control" step="0.01" min="0" placeholder="0,00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="trip-notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-close="modalTrip">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Viagem</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: NOVO/EDITAR GASTO ===== -->
+    <div class="modal-overlay" id="modalExpense">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h3 id="modalExpenseTitle">Lançamento Rápido de Gasto</h3>
+                <button class="modal-close" data-close="modalExpense"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formExpense">
+                <div class="modal-body">
+                    <input type="hidden" id="exp-id">
+
+                    <label style="display:block; font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">Categoria do Gasto *</label>
+                    <div class="quick-categories" id="quickCategories">
+                        <button type="button" class="quick-cat-btn" data-cat="alimentacao"><i class="fas fa-utensils"></i><div class="label">Alimentação</div></button>
+                        <button type="button" class="quick-cat-btn" data-cat="hospedagem"><i class="fas fa-bed"></i><div class="label">Hospedagem</div></button>
+                        <button type="button" class="quick-cat-btn" data-cat="combustivel"><i class="fas fa-gas-pump"></i><div class="label">Combustível</div></button>
+                        <button type="button" class="quick-cat-btn" data-cat="transporte"><i class="fas fa-car"></i><div class="label">Transporte</div></button>
+                        <button type="button" class="quick-cat-btn" data-cat="outros"><i class="fas fa-tag"></i><div class="label">Outros</div></button>
+                    </div>
+                    <input type="hidden" id="exp-category" required>
+
+                    <div class="form-group hidden" id="categoryOtherWrap">
+                        <label>Especifique a categoria *</label>
+                        <input type="text" id="exp-category-other" class="form-control" placeholder="Ex: Souvenirs, taxa de embarque...">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Viagem *</label>
+                            <select id="exp-trip" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Valor (R$) *</label>
+                            <input type="number" id="exp-amount" class="form-control" step="0.01" min="0.01" required placeholder="0,00">
+                        </div>
+                    </div>
+
+                    <div class="form-row-3" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:14px;">
+                        <div class="form-group">
+                            <label>Data *</label>
+                            <input type="date" id="exp-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Hora *</label>
+                            <input type="time" id="exp-time" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Forma de Pagamento *</label>
+                            <select id="exp-payment" class="form-control" required>
+                                <option value="">Selecione...</option>
+                                <option value="dinheiro">Dinheiro</option>
+                                <option value="pix">PIX</option>
+                                <option value="cartao_credito">Cartão Crédito</option>
+                                <option value="cartao_debito">Cartão Débito</option>
+                                <option value="transferencia">Transferência</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Local (cidade / estabelecimento) *</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="exp-location" class="form-control" required placeholder="Ex: Restaurante do Porto - Florianópolis">
+                            <button type="button" class="btn btn-secondary btn-icon" id="btnGeo" title="Capturar localização GPS">
+                                <i class="fas fa-location-crosshairs"></i>
+                            </button>
+                        </div>
+                        <small id="geoHint" class="text-muted" style="font-size:11px; display:block; margin-top:4px;"></small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="exp-notes" class="form-control" rows="2" placeholder="Detalhes adicionais..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Comprovante (imagem ou PDF)</label>
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Clique para enviar ou tire uma foto</p>
+                            <p style="font-size:11px; color:var(--text-muted);">JPG, PNG ou PDF até 5MB</p>
+                            <img id="receiptPreview" class="preview hidden" alt="Comprovante">
+                            <div id="receiptInfo" class="hidden" style="margin-top:8px; font-size:12px; color:var(--success);"></div>
+                        </div>
+                        <input type="file" id="exp-receipt" class="hidden" accept="image/*,application/pdf" capture="environment">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-close="modalExpense">Cancelar</button>
+                    <button type="submit" class="btn btn-gold"><i class="fas fa-check"></i> Registrar Gasto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: USUÁRIO ===== -->
+    <div class="modal-overlay" id="modalUser">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalUserTitle">Novo Usuário</h3>
+                <button class="modal-close" data-close="modalUser"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="formUser">
+                <div class="modal-body">
+                    <input type="hidden" id="user-id">
+                    <div class="form-group">
+                        <label>Nome Completo *</label>
+                        <input type="text" id="user-name" class="form-control" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>E-mail *</label>
+                            <input type="email" id="user-email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Senha *</label>
+                            <input type="password" id="user-password" class="form-control" minlength="8" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Perfil *</label>
+                            <select id="user-role" class="form-control" required>
+                                <option value="employee">Funcionário</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento</label>
+                            <input type="text" id="user-department" class="form-control" placeholder="Ex: Vendas">
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="user-active" checked>
+                        <label for="user-active">Usuário ativo</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-close="modalUser">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: APROVAÇÃO ===== -->
+    <div class="modal-overlay" id="modalApproval">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Aprovação de Despesa</h3>
+                <button class="modal-close" data-close="modalApproval"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="approvalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-close="modalApproval">Fechar</button>
+                <button type="button" class="btn btn-danger" id="btnReject"><i class="fas fa-times"></i> Recusar</button>
+                <button type="button" class="btn btn-success" id="btnApprove"><i class="fas fa-check"></i> Aprovar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/views.js"></script>
+    <script src="js/forms.js"></script>
+    <script src="js/reports.js"></script>
+</body>
+</html>

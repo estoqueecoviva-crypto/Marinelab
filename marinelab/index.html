@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Marine Lab - Sistema de Controle de Viagens Corporativas">
+    <title>Marine Lab • Controle de Viagens</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+
+    <svg class="login-wave" viewBox="0 0 1200 200" preserveAspectRatio="none">
+        <path d="M0,100 C150,30 350,170 600,100 C850,30 1050,170 1200,100 L1200,200 L0,200 Z" fill="#C9A961"/>
+        <path d="M0,130 C150,60 350,200 600,130 C850,60 1050,200 1200,130 L1200,200 L0,200 Z" fill="#C9A961" opacity="0.5"/>
+    </svg>
+
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="login-logo-mark">
+                <img src="logomarinelab.jpeg" alt="Logo Marine Lab" class="brand-logo-img">
+            </div>
+            <h1>Marine Lab</h1>
+            <div class="subtitle">Controle de Viagens</div>
+        </div>
+
+        <div class="login-divider">
+            <i class="fas fa-compass"></i>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">E-mail Corporativo</label>
+                <input type="email" id="email" class="form-control" placeholder="seu@marinelab.com" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i>
+                Acessar Sistema
+            </button>
+        </form>
+
+        <div class="login-help">
+            <strong><i class="fas fa-info-circle"></i> Ambiente protegido:</strong><br>
+            As credenciais de acesso não são exibidas na tela de login.
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>
